@@ -1,0 +1,90 @@
+public interface ISwitchable
+{
+    void TurnOn();
+    void TurnOff();
+    bool IsOn { get; }
+}
+
+public interface ILevelControllable
+{
+    void SetLevel(int level);
+    int GetLevel();
+}
+
+public class Lamp : ISwitchable, ILevelControllable
+{
+    private int _level;
+    private bool _isOn;
+
+    public bool IsOn => _isOn;
+
+    public void TurnOn()
+    {
+        _isOn = true;
+        _level = 100;
+        PrintState();
+    }
+
+    public void TurnOff()
+    {
+        _isOn = false;
+        _level = 0;  
+        PrintState();
+    }
+
+    public void SetLevel(int level)
+    {
+        if (level < 0)
+            _level = 0;
+        else if (level > 100)
+            _level = 100;
+        else
+            _level = level;
+
+        PrintState();  
+    }
+
+    public int GetLevel() => _level;
+
+    private void PrintState()
+    {
+        Console.WriteLine($"Лампа: {(_isOn ? "включена" : "выключена")}, уровень = {_level}");
+    }
+}
+
+public class Fan : ISwitchable
+{
+    private bool _isOn;
+
+    public bool IsOn => _isOn;
+
+    public void TurnOn()
+    {
+        _isOn = true;
+        Console.WriteLine("Вентилятор: включён");
+    }
+
+    public void TurnOff()
+    {
+        _isOn = false;
+        Console.WriteLine("Вентилятор: выключен");
+    }
+}
+class Program
+{
+    static void Main()
+    {
+
+    Lamp lamp = new Lamp();
+    Fan fan = new Fan();
+
+    Console.WriteLine("=== Тестирование лампы ===");
+    lamp.TurnOn();
+    lamp.SetLevel(30);
+    lamp.TurnOff();
+
+    Console.WriteLine("\n=== Тестирование вентилятора ===");
+    fan.TurnOn();
+    fan.TurnOff();
+    }
+}
