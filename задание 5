@@ -1,0 +1,99 @@
+public interface IAccountOperations
+{
+    void Deposit(decimal amount);
+    void Withdraw(decimal amount);
+}
+
+public interface ITransferOperations
+{
+    void Transfer(IAccountOperations targetAccount, decimal amount);
+}
+
+public class BankAccount : IAccountOperations, ITransferOperations
+{
+    public string AccountNumber { get; }
+    private decimal balance;
+
+    public BankAccount(string accountNumber, decimal initialBalance = 0)
+    {
+        AccountNumber = accountNumber;
+        if (initialBalance < 0)
+            throw new ArgumentException("Начальный баланс не может быть отрицательным.");
+        balance = initialBalance;
+    }
+
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Сумма внесения должна быть больше нуля.");
+
+        balance += amount;
+        Console.WriteLine($"На счёт {AccountNumber} внесено: {amount:C}. Новый баланс: {balance:C}");
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Сумма снятия должна быть больше нуля.");
+
+        if (balance < amount)
+            throw new InvalidOperationException("Недостаточно средств на счёте.");
+
+        balance -= amount;
+        Console.WriteLine($"Со счёта {AccountNumber} снято: {amount:C}. Новый баланс: {balance:C}");
+    }
+
+    public void Transfer(IAccountOperations targetAccount, decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Сумма перевода должна быть больше нуля.");
+
+        if (balance < amount)
+            throw new InvalidOperationException("Недостаточно средств для перевода.");
+
+        Withdraw(amount);
+
+        var target = targetAccount as BankAccount;
+        string targetNumber = target?.AccountNumber ?? "неизвестный счёт";
+
+        targetAccount.Deposit(amount);
+        Console.WriteLine($"Переведено {amount:C} на счёт {targetNumber}.");
+    }
+
+    public decimal GetBalance()
+    {
+        return balance;
+    }
+
+    public override string ToString()
+    {
+        return $"Счёт {AccountNumber}: баланс {balance:C}";
+    }
+}
+internal class Program
+{
+    static void Main()
+    {
+        BankAccount account1 = new BankAccount("ACC001", 1000);
+        BankAccount account2 = new BankAccount("ACC002", 500);
+
+        Console.WriteLine("Исходное состояние счетов:");
+        Console.WriteLine(account1);
+        Console.WriteLine(account2);
+        Console.WriteLine();
+
+        try
+        {
+            account1.Transfer(account2, 200);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при переводе: {ex.Message}");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Состояние счетов после перевода:");
+        Console.WriteLine(account1);
+        Console.WriteLine(account2);
+    }
+}
